@@ -40,7 +40,7 @@ class _HomeViewState extends State<HomeView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                Text('Hi Arslan !', style: Theme.of(context).textTheme.headlineLarge),
+                Text('Hi !', style: Theme.of(context).textTheme.headlineLarge),
                 Text('Your Grocery List', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 20),
 

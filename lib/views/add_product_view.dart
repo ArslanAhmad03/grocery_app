@@ -11,7 +11,7 @@ class AddHomeProduct extends StatefulWidget {
 
 class _AddHomeProductState extends State<AddHomeProduct> {
 
-  final List<Map<String, dynamic>> _groceryItems = [
+  final List<Map<String, dynamic>> groceryItems = [
     // ===== Dairy & Alternatives =====
     {'item': 'Soy Milk', 'status': false},
     {'item': 'Almond Milk', 'status': false},
@@ -114,19 +114,18 @@ class _AddHomeProductState extends State<AddHomeProduct> {
     {'item': 'Ice Cream', 'status': false},
   ];
 
-  String _searchQuery = '';
+  String searchQuery = '';
 
-  void _toggleItemStatus(int index) {
+  void toggleItemStatus(int index) {
     setState(() {
-      _groceryItems[index]['status'] = !_groceryItems[index]['status'];
-      // Sort the list: checked items first, then unchecked
-      _groceryItems.sort((a, b) {
+      groceryItems[index]['status'] = !groceryItems[index]['status'];
+      groceryItems.sort((a, b) {
         if (a['status'] && !b['status']) {
-          return -1; // a comes before b
+          return -1;
         } else if (!a['status'] && b['status']) {
-          return 1; // b comes before a
+          return 1;
         } else {
-          return 0; // No change in order
+          return 0;
         }
       });
     });
@@ -157,7 +156,7 @@ class _AddHomeProductState extends State<AddHomeProduct> {
                   cursorColor: Colors.white,
                   onChanged: (value) {
                     setState(() {
-                      _searchQuery = value;
+                      searchQuery = value;
                     });
                   },
                   decoration: InputDecoration(
@@ -166,7 +165,8 @@ class _AddHomeProductState extends State<AddHomeProduct> {
                       contentPadding:
                           const EdgeInsets.fromLTRB(20.0, 6.0, 20.0, 6.0),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(24.0)),
+                          borderRadius: BorderRadius.circular(24.0),
+                      ),
                       fillColor: Colors.green.shade400,
                       filled: true,
                       suffixIcon: const Icon(Icons.search, color: Colors.white)),
@@ -178,18 +178,18 @@ class _AddHomeProductState extends State<AddHomeProduct> {
                 Expanded(
                   child: AnimationLimiter(
                     child: ListView.builder(
-                      itemCount: _groceryItems.length,
+                      itemCount: groceryItems.length,
                       itemBuilder: (context, index) {
-                        final item = _groceryItems[index];
+                        final item = groceryItems[index];
 
-                        if (_searchQuery.isEmpty || item['item'].toLowerCase().contains(_searchQuery.toLowerCase())) {
+                        if (searchQuery.isEmpty || item['item'].toLowerCase().contains(searchQuery.toLowerCase())) {
                           return AnimationConfiguration.staggeredList(
                             position: index,
                             duration: const Duration(milliseconds: 500),
                             child: SlideAnimation(
                               verticalOffset: 100.0,
                               child: FadeInAnimation(
-                                child: _buildCheckableListItem(item, index),
+                                child: buildCheckableListItem(item, index),
                               ),
                             ),
                           );
@@ -208,13 +208,11 @@ class _AddHomeProductState extends State<AddHomeProduct> {
     );
   }
 
-  Widget _buildCheckableListItem(Map<String, dynamic> item, int index) {
+  Widget buildCheckableListItem(Map<String, dynamic> item, int index) {
     final isChecked = item['status'];
-
     return GestureDetector(
-      // Use GestureDetector for tap detection
       onTap: () {
-        _toggleItemStatus(index);
+        toggleItemStatus(index);
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -233,14 +231,19 @@ class _AddHomeProductState extends State<AddHomeProduct> {
             ],
           ),
           child: Row(
-            // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              const SizedBox(width: 30),
-              Text(item['item']!, style: const TextStyle(fontSize: 16)),
+              Flexible(
+                child: Text(item['item']!,
+                    style: const TextStyle(fontSize: 16),
+                    overflow: TextOverflow.ellipsis),
+              ),
               const Spacer(),
-              isChecked
-                  ? const Icon(Icons.check, color: Colors.green)
-                  : const SizedBox(),
+              Flexible(
+                child: isChecked
+                    ? const Icon(Icons.check, color: Colors.green)
+                    : const SizedBox(),
+              ),
             ],
           ),
         ),

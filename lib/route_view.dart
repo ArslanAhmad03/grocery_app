@@ -57,7 +57,7 @@ class _RouteViewState extends State<RouteView> {
           durationInMilliSeconds: 300,
           kIconSize: 24,
           kBottomRadius: 8.0,
-
+          bottomBarWidth: MediaQuery.of(context).size.width,
           bottomBarItems: const [
             BottomBarItem(
               inActiveItem: Icon(
