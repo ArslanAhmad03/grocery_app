@@ -11,44 +11,64 @@ class GroceryController extends GetxController {
 
   RxString imageUrl = ''.obs;
   RxString adminName = ''.obs;
-
+  RxString adminType = ''.obs;
   RxString adminId = ''.obs;
+  RxBool imageLoadingError = false.obs;
 
+  // text_field controller's
   Rx<TextEditingController> nameController = TextEditingController().obs;
   Rx<TextEditingController> referenceController = TextEditingController().obs;
 
-  // App User Data
-  Future<void> addUser({required AppUser appUser, required String id}) async {
+  // add Admin Data
+  Future<void> addAdmin({required AppUser appUser, required String id}) async {
     await FirebaseFirestore.instance.collection('AppUsers').doc("admin$id").set({
       "user_name" : appUser.name,
       "user_image" : appUser.image,
-    });
-  }
-  // get Admin data
-  getAdminData(){
-    print('get admin ${adminId.value}');
-    FirebaseFirestore.instance.collection('AppUsers').doc("admin${adminId.value}").snapshots().listen((doc){
-      if (doc.exists) {
-        adminName.value = doc['user_name'];
-        imageUrl.value = doc['user_image'];
-        print(doc['user_image']);
-      }
+      "user_type" : appUser.type,
     });
   }
 
-  // App Member Data
+  // get Admin Data
+  getAdminData(){
+    print('get admin:${(adminId.value)}');
+    try{
+      FirebaseFirestore.instance.collection('AppUsers').doc("admin${adminId.value}").snapshots().listen((doc){
+        if (doc.exists) {
+          adminName.value = doc['user_name'];
+          imageUrl.value = doc['user_image'];
+          adminType.value = doc['user_type'];
+          print(doc['user_name']);
+          print(doc['user_image']);
+        }
+      });
+    }  catch (e){
+      print(e.toString());
+    }
+  }
+
+  // add Member Data
   Future<void> addMember({required AppUser appUser, required String adminId}) async {
-    await FirebaseFirestore.instance.collection('AppUsers').doc("admin${adminId}").collection('Members').add({
+    await FirebaseFirestore.instance.collection('AppUsers').doc("admin$adminId").collection('Members').add({
       "user_name" : appUser.name,
       "user_image" : appUser.image,
+      "user_type" : appUser.type,
     });
   }
+  // get Member Data
   RxList<AppUser> membersData = <AppUser>[].obs;
   void getMemberData() {
     FirebaseFirestore.instance.collection('AppUsers').doc("admin${adminId.value}").collection('Members').snapshots().listen((event) {
       membersData.value = AppUser.jsonToList(event.docs);
-      print(event.docs);
     });
+  }
+
+  // delete member
+  void deleteMember({required String name}) async {
+    final snapshot = await FirebaseFirestore.instance.collection('AppUsers').doc("admin${adminId.value}").collection('Members').where('user_name', isEqualTo: name).get();
+
+    for (var doc in snapshot.docs) {
+      await doc.reference.delete();
+    }
   }
 
   // Add Items
@@ -61,10 +81,8 @@ class GroceryController extends GetxController {
   // get selected items
   RxList<GroceryItem> getSelectedItems = <GroceryItem>[].obs;
   void getItem(){
-
     FirebaseFirestore.instance.collection('AppUsers').doc("admin${adminId.value}").collection('ItemsList').snapshots().listen((event){
       getSelectedItems.value = GroceryItem.jsonToList(event.docs);
-      print(event.docs.first.data());
 
       print(getSelectedItems);
     });
@@ -78,8 +96,6 @@ class GroceryController extends GetxController {
       await doc.reference.delete();
     }
   }
-
-
 
   // store data locally
   RxBool isLoggedIn = false.obs;
@@ -110,5 +126,11 @@ class GroceryController extends GetxController {
         Get.offAll(() => LoginScreen());
       });
     }
+  }
+  void notRemember() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('isLoggedIn');
+    await prefs.remove('userName');
+    await prefs.remove('userId');
   }
 }

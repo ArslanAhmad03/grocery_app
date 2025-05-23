@@ -121,6 +121,7 @@ class _AddHomeProductState extends State<AddHomeProduct> {
 
   void toggleItemStatus(int index) {
     setState(() {
+      // swap the status
       groceryItems[index]['status'] = !groceryItems[index]['status'];
       groceryItems.sort((a, b) {
         if (a['status'] && !b['status']) {
@@ -200,9 +201,9 @@ class _AddHomeProductState extends State<AddHomeProduct> {
                             ),
                           );
                         } else {
-                          // Return an empty container if the item doesn't match the search
                           return Container();
                         }
+
                       },
                     ),
                   ),
@@ -217,17 +218,18 @@ class _AddHomeProductState extends State<AddHomeProduct> {
   Widget buildCheckableListItem(Map<String, dynamic> item, int index) {
     final isChecked = item['status'];
     return GestureDetector(
-      onTap: () async {
+      onTap: () {
 
         if(item['status'] == false) {
           toggleItemStatus(index);
+
           print(item['item']!);
           print(item['status']!);
 
           // add items
           groceryController.addItem(itemName: item['item']!, itemStatus: item['status']!);
 
-          await ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Item added'), duration: Duration(milliseconds: 300)));
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Item ${item['item']!} added'), duration: Duration(milliseconds: 300)));
         }else{
           toggleItemStatus(index);
         }

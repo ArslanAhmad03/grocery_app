@@ -1,4 +1,3 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
@@ -20,6 +19,7 @@ class _HomeViewState extends State<HomeView> {
   void initState() {
     groceryController.getAdminData();
     groceryController.getItem();
+    groceryController.getMemberData();
     super.initState();
   }
 
@@ -27,7 +27,7 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        BackPage(),
+        const BackPage(),
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -107,8 +107,13 @@ class _HomeViewState extends State<HomeView> {
               ),
             ),
             // Spacer(),
-            Expanded(
-              child: Icon(
+            GestureDetector(
+              onTap: () {
+                groceryController.itemDeleted(item.name);
+
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Item ${item.name} deleted'), duration: const Duration(milliseconds: 300)));
+              },
+              child: const Icon(
                 Icons.delete_forever,color: Colors.red,
               ),
             ),

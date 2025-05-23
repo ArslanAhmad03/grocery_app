@@ -209,8 +209,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                         },
                                       );
 
-                                      uniqueId = DateTime.now().millisecond;
-                                      print(uniqueId);
                                     },
                                     icon: Container(
                                       height: 30,
@@ -283,55 +281,73 @@ class _LoginScreenState extends State<LoginScreen> {
                     //
                     Center(
                       child: ElevatedButton(
-                        onPressed: () {
+                        onPressed: () async {
 
-                          if(groceryController.imageUrl.value.isEmpty){
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("waiting for image")));
-                          }else{
+                          if (groceryController.imageUrl.value.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Please upload an image first")),
+                            );
+                            return;
+                          }
 
-                            if (!_formKey.currentState!.validate()) return;
+                          if (!_formKey.currentState!.validate()) return;
 
-                            if(groceryController.referenceController.value.text.isEmpty){
+                          try {
+                            if (groceryController.referenceController.value.text.isEmpty) {
 
+                              uniqueId = DateTime.now().millisecond;
                               print('Admin: ${groceryController.nameController.value.text}');
 
-                              groceryController.addUser(
+                              await groceryController.addAdmin(
                                 appUser: AppUser(
                                   name: groceryController.nameController.value.text.trim(),
                                   image: groceryController.imageUrl.value,
+                                  type: '1',
                                 ),
                                 id: uniqueId.toString(),
                               );
-                              groceryController.rememberStatus(
+
+                               groceryController.rememberStatus(
                                 name: groceryController.nameController.value.text.trim(),
                                 adminId: uniqueId.toString(),
                               );
 
                               Get.offAll(() => RouteView());
+                            } else {
 
-                            }else{
+                              final reference = groceryController.referenceController.value.text;
+                              print('Member Reference: $reference');
 
-                              print('Member (Reference: ${groceryController.referenceController.value.text})');
+                              final adminId = reference.startsWith('admin')
+                                  ? reference.substring(5)
+                                  : reference;
 
-                              groceryController.addMember(
+                              await groceryController.addMember(
                                 appUser: AppUser(
                                   name: groceryController.nameController.value.text.trim(),
                                   image: groceryController.imageUrl.value,
+                                  type: '0'
                                 ),
-                                adminId: groceryController.referenceController.value.text,
+                                adminId: adminId,
                               );
-                              groceryController.rememberStatus(
+
+                              groceryController.adminId.value = adminId;
+                              print("Extracted Admin ID: ${groceryController.adminId.value}");
+
+                               groceryController.rememberStatus(
                                 name: groceryController.nameController.value.text.trim(),
-                                adminId: uniqueId.toString(),
+                                adminId: adminId,
                               );
 
                               Get.offAll(() => RouteView());
-
                             }
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Error: ${e.toString()}")),
+                            );
                           }
-                
                         },
-                        child: Text("Continue"),
+                        child: const Text("Continue"),
                       ),
                     ),
                 
@@ -339,7 +355,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
-          ),),
+          ),
+          ),
         ],
       ),
     );
