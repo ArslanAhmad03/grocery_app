@@ -2,6 +2,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:get/get.dart';
+import 'package:grocery_app/controllers/grocery_controller.dart';
 import 'package:grocery_app/models/grocery_item.dart';
 import 'package:grocery_app/utils/back_page.dart';
 
@@ -13,105 +14,67 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+  GroceryController groceryController = Get.put(GroceryController());
 
-  final List<GroceryItem> _groceryItems = [
-    GroceryItem(name: 'Salmon', addedBy: 'arslan'),
-    GroceryItem(name: 'Greek Yogurt', addedBy: 'shahzad'),
-    GroceryItem(name: 'Bell Peppers', addedBy: 'saif'),
-    GroceryItem(name: 'Quinoa', addedBy: 'arslan'),
-    GroceryItem(name: 'Dark Chocolate', addedBy: 'shahzad'),
-    GroceryItem(name: 'Pita Bread', addedBy: 'saif'),
-    GroceryItem(name: 'Canned Tuna', addedBy: 'arslan'),
-    GroceryItem(name: 'Spinach', addedBy: 'shahzad'),
-    GroceryItem(name: 'Granola Bars', addedBy: 'saif'),
-    GroceryItem(name: 'Olive Oil', addedBy: 'arslan'),
-  ];
+  @override
+  void initState() {
+    groceryController.getAdminData();
+    groceryController.getItem();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-
         BackPage(),
-
         Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Hi !', style: Theme.of(context).textTheme.headlineLarge),
+              Text('Your Grocery List',
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 20),
+              Expanded(
+                child: Obx(
+                  () {
+                    final items = groceryController.getSelectedItems;
+                    if (items.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          "No items selected",
+                          style: TextStyle(fontSize: 20, color: Colors.grey),
+                        ),
+                      );
+                    }
 
-                Text('Hi !', style: Theme.of(context).textTheme.headlineLarge),
-                Text('Your Grocery List', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 20),
+                    return AnimationLimiter(
+                      child: ListView.builder(
+                        itemCount: groceryController.getSelectedItems.length,
+                        itemBuilder: (context, index) {
+                          final item = groceryController.getSelectedItems[index];
 
-                Expanded(
-                  child: AnimationLimiter(
-                    child: ListView.builder(
-                      itemCount: _groceryItems.length,
-                      itemBuilder: (context, index) {
-                        final item = _groceryItems[index];
-
-                        return AnimationConfiguration.staggeredList(
-                          position: index,
-                          duration: const Duration(milliseconds: 500),
-                          child: SlideAnimation(
-                            verticalOffset: 100.0,
-                            child: FadeInAnimation(
-                              child: Dismissible(
-                                key: Key(item.name),
-                                direction: DismissDirection.horizontal,
-                                onDismissed: (direction) {
-                                  setState(() => _groceryItems.removeAt(index));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('${item.name} removed'),
-                                      action: SnackBarAction(
-                                        label: 'Undo',
-                                        onPressed: () {
-                                          setState(() {
-                                            _groceryItems.insert(index, item);
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                  );
-                                },
-                                background: buildSwipeBackground(Icons.check, Colors.green, isEnd: false),
-                                secondaryBackground: buildSwipeBackground(Icons.close, Colors.red, isEnd: true),
-
-                                confirmDismiss: (direction) async {
-                                  if (direction == DismissDirection.endToStart) {
-                                    return await AwesomeDialog(
-                                      context: context,
-                                      dialogType: DialogType.warning,
-                                      headerAnimationLoop: false,
-                                      animType: AnimType.leftSlide,
-                                      title: 'Confirm Deletion',
-                                      desc: 'Are you sure you want to remove this item?',
-                                      buttonsTextStyle: const TextStyle(color: Colors.black),
-                                      showCloseIcon: false,
-                                      btnCancelOnPress: () {
-                                        Get.back();
-                                      },
-                                      btnOkOnPress: () {
-                                        Get.back();
-                                      },
-                                    ).show();
-                                  }
-                                  return true;
-                                },
+                          return AnimationConfiguration.staggeredList(
+                            position: index,
+                            duration: const Duration(milliseconds: 500),
+                            child: SlideAnimation(
+                              verticalOffset: 100.0,
+                              child: FadeInAnimation(
                                 child: buildListItem(item),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                          );
+                        },
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
       ],
     );
   }
@@ -136,14 +99,18 @@ class _HomeViewState extends State<HomeView> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Flexible(
-              child: Text(item.name,
-                  style: const TextStyle(fontSize: 16),
-                  overflow: TextOverflow.ellipsis),
+            Expanded(
+              child: Text(
+                item.name,
+                style: const TextStyle(fontSize: 16),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            Flexible(
-              child: Text('added by ${item.addedBy}',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+            // Spacer(),
+            Expanded(
+              child: Icon(
+                Icons.delete_forever,color: Colors.red,
+              ),
             ),
           ],
         ),
@@ -151,8 +118,7 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget buildSwipeBackground(IconData icon, Color color,
-      {bool isEnd = false}) {
+  Widget buildSwipeBackground(IconData icon, Color color, {bool isEnd = false}) {
     return Container(
       alignment: isEnd ? Alignment.centerRight : Alignment.centerLeft,
       padding: const EdgeInsets.symmetric(horizontal: 20),

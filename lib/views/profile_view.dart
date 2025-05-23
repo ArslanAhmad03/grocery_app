@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:get/get.dart';
+import 'package:grocery_app/controllers/grocery_controller.dart';
 import 'package:grocery_app/models/app_user.dart';
 import 'package:grocery_app/utils/back_page.dart';
+import 'package:share_plus/share_plus.dart';
 
-class ProfileView extends StatelessWidget {
+class ProfileView extends StatefulWidget {
   ProfileView({super.key});
 
+  @override
+  State<ProfileView> createState() => _ProfileViewState();
+}
 
-  final List<AppUser> appUser = [
-    AppUser(name: 'Shahzad', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeGnFu9NwouiTpqCBF6jNgBoFxE1z795uEAQ&s'),
-    AppUser(name: 'Arslan', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRI_LqewXMXkyR_DpYJzygqLiAh6PE5ggekiw&s'),
-    AppUser(name: 'Zobaisha', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHn1FysiZN6T4GYkMcgzjibigNnxb8VeAZA6NZ98Qum7zgAaYyPEptyRXwe3tVNWOIglU&usqp=CAU'),
-    AppUser(name: 'Shaherbano', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcUob229fEEDvkWY3izVin_W5RKhBCWTWuHg&s'),
-  ];
+class _ProfileViewState extends State<ProfileView> {
+  GroceryController groceryController = Get.put(GroceryController());
+
+  // final List<AppUser> appUser = [
+  //   AppUser(name: 'Shahzad', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSeGnFu9NwouiTpqCBF6jNgBoFxE1z795uEAQ&s'),
+  //   AppUser(name: 'Arslan', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRI_LqewXMXkyR_DpYJzygqLiAh6PE5ggekiw&s'),
+  //   AppUser(name: 'Zobaisha', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRHn1FysiZN6T4GYkMcgzjibigNnxb8VeAZA6NZ98Qum7zgAaYyPEptyRXwe3tVNWOIglU&usqp=CAU'),
+  //   AppUser(name: 'Shaherbano', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTcUob229fEEDvkWY3izVin_W5RKhBCWTWuHg&s'),
+  // ];
 
   @override
   Widget build(BuildContext context) {
@@ -27,38 +36,91 @@ class ProfileView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-              
+
                   SizedBox(height: 10),
-              
+
                   Text('Profiles', style: Theme.of(context).textTheme.headlineLarge),
                   Text('Allow People To Add To Your\nGrocery List', style: Theme.of(context).textTheme.titleMedium),
-              
+
                   const SizedBox(height: 30),
-              
-                  AnimationLimiter(
-                    child: Column(
-                      children: List.generate(appUser.length, (int index) {
-                        final user = appUser[index];
-                        return AnimationConfiguration.staggeredList(
-                          position: index,
-                          duration: const Duration(milliseconds: 500),
-                          child: SlideAnimation(
-                            verticalOffset: 100.0,
-                            child: FadeInAnimation(
-                                child: _buildProfileTile(context, user.image, user.name),
+
+                  groceryController.adminName.value.isNotEmpty
+                  ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 15.0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade100,
+                        borderRadius: BorderRadius.circular(8.0),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            offset: Offset(2, 4),
+                            blurRadius: 4,
+                            spreadRadius: 0.5,
+                          )
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+
+                          SizedBox(width: 6.0),
+
+                          CircleAvatar(
+                            backgroundImage: NetworkImage(
+                              groceryController.imageUrl.value,
                             ),
+                            radius: 25,
                           ),
-                        );
-                      }),
+                          SizedBox(width: 14),
+                          Expanded(
+                            child: Text(groceryController.adminName.value.toLowerCase(), style: Theme.of(context).textTheme.titleMedium),
+                          ),
+                          Text(
+                            'Admin'
+                          ),
+                          SizedBox(width: 6.0),
+                        ],
+                      ),
+                    ),
+                  ) : SizedBox(child: Center(child: Text('No Admin Data')),),
+
+                  groceryController.membersData.isEmpty
+                      ? Center(
+                    child: Text(
+                      "No Member's",
+                      style: TextStyle(fontSize: 24),
+                    ),
+                  )
+                      : AnimationLimiter(
+                    child: Column(
+                      children: List.generate(
+                        groceryController.membersData.length,
+                            (index) {
+                          final user = groceryController.membersData[index];
+                          return AnimationConfiguration.staggeredList(
+                            position: index,
+                            duration: const Duration(milliseconds: 500),
+                            child: SlideAnimation(
+                              verticalOffset: 100.0,
+                              child: FadeInAnimation(
+                                child: _buildProfileTile(context, user.image, user.name),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
-              
+
+
                   SizedBox(height: 20),
-              
+
                   Center(
                     child: ElevatedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('coming soon')));
+                      onPressed: () async {
+                        await SharePlus.instance.share(ShareParams(title: 'Grocery App', text: "Join my group with reference 'admin${groceryController.adminId.value}'"));
                       },
                       child: Text('Send Link to Invite'),
                       style: ElevatedButton.styleFrom(
@@ -66,7 +128,7 @@ class ProfileView extends StatelessWidget {
                         foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25), // Rounded corners
+                          borderRadius: BorderRadius.circular(25),
                         ),
                       ),
                     ),

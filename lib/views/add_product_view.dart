@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:get/get.dart';
+import 'package:grocery_app/controllers/grocery_controller.dart';
 import 'package:grocery_app/utils/back_page.dart';
 
 class AddHomeProduct extends StatefulWidget {
@@ -10,6 +12,7 @@ class AddHomeProduct extends StatefulWidget {
 }
 
 class _AddHomeProductState extends State<AddHomeProduct> {
+  GroceryController groceryController = Get.put(GroceryController());
 
   final List<Map<String, dynamic>> groceryItems = [
     // ===== Dairy & Alternatives =====
@@ -143,12 +146,14 @@ class _AddHomeProductState extends State<AddHomeProduct> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                
                 const SizedBox(height: 10),
-                Text('Add Products',
-                    style: Theme.of(context).textTheme.headlineLarge),
-                Text('To Your Grocery List',
-                    style: Theme.of(context).textTheme.titleMedium),
+                
+                Text('Add Products', style: Theme.of(context).textTheme.headlineLarge),
+                Text('To Your Grocery List', style: Theme.of(context).textTheme.titleMedium),
+                
                 const SizedBox(height: 20),
+                
                 TextFormField(
                   keyboardType: TextInputType.text,
                   autofocus: false,
@@ -171,10 +176,11 @@ class _AddHomeProductState extends State<AddHomeProduct> {
                       filled: true,
                       suffixIcon: const Icon(Icons.search, color: Colors.white)),
                 ),
+                
                 const SizedBox(height: 10),
-                Center(
-                    child: Text('Your Favorites'.toUpperCase(),
-                        style: Theme.of(context).textTheme.titleSmall)),
+                
+                Center(child: Text('Your Favorites'.toUpperCase(), style: Theme.of(context).textTheme.titleSmall)),
+                
                 Expanded(
                   child: AnimationLimiter(
                     child: ListView.builder(
@@ -211,8 +217,21 @@ class _AddHomeProductState extends State<AddHomeProduct> {
   Widget buildCheckableListItem(Map<String, dynamic> item, int index) {
     final isChecked = item['status'];
     return GestureDetector(
-      onTap: () {
-        toggleItemStatus(index);
+      onTap: () async {
+
+        if(item['status'] == false) {
+          toggleItemStatus(index);
+          print(item['item']!);
+          print(item['status']!);
+
+          // add items
+          groceryController.addItem(itemName: item['item']!, itemStatus: item['status']!);
+
+          await ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Item added'), duration: Duration(milliseconds: 300)));
+        }else{
+          toggleItemStatus(index);
+        }
+
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),

@@ -1,19 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class GroceryItem {
   final String name;
-  final String addedBy;
   final bool isDone;
 
-  GroceryItem({required this.name, required this.addedBy, this.isDone = false});
+  GroceryItem({required this.name, this.isDone = false});
 
   Map<String, dynamic> toJson() => {
-    'name': name,
-    'addedBy': addedBy,
-    'isDone': isDone,
+    'item_name': name,
+    'item_status': isDone,
   };
 
   factory GroceryItem.fromJson(Map<String, dynamic> json) => GroceryItem(
-    name: json['name'],
-    addedBy: json['addedBy'],
-    isDone: json['isDone'],
+    name: json['item_name'] ?? '',
+    isDone: json['item_status'] ?? false,
   );
+
+  static List<GroceryItem> jsonToList(List<DocumentSnapshot> docs) {
+    return docs.map((doc) => GroceryItem.fromJson(doc.data() as Map<String, dynamic>)).toList();
+  }
 }

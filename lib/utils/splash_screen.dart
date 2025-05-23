@@ -2,7 +2,7 @@
 import 'package:another_flutter_splash_screen/another_flutter_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:grocery_app/route_view.dart';
+import 'package:grocery_app/controllers/grocery_controller.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -12,6 +12,16 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  GroceryController groceryController = Get.put(GroceryController());
+  
+  @override
+  void initState() {
+
+    groceryController.loginStatus();
+
+    super.initState();
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,17 +31,6 @@ class _SplashScreenState extends State<SplashScreen> {
       gifWidth: 270,
       gifHeight: 475,
       backgroundColor: Colors.white,
-      // duration: Duration(seconds: 3),
-      // onEnd: (){
-      //   Get.offAll(() => const RouteView());
-      // },
-      asyncNavigationCallback: () async {
-        await Future.delayed(const Duration(seconds: 3)).then((value){
-          if(context.mounted){
-            Get.offAll(() => const RouteView());
-          }
-        });
-      },
     );
   }
 }

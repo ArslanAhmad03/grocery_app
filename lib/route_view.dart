@@ -1,6 +1,7 @@
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:grocery_app/utils/back_page.dart';
+import 'package:get/get.dart';
+import 'package:grocery_app/controllers/grocery_controller.dart';
 import 'package:grocery_app/views/home_view.dart';
 import 'package:grocery_app/views/add_product_view.dart';
 import 'package:grocery_app/views/profile_view.dart';
@@ -13,20 +14,27 @@ class RouteView extends StatefulWidget {
 }
 
 class _RouteViewState extends State<RouteView> {
+  GroceryController groceryController = Get.put(GroceryController());
 
   final pageController = PageController(initialPage: 0);
-
   final NotchBottomBarController notchBottomBarController = NotchBottomBarController(index: 0);
 
-  final List<Widget> listScreens = [
+  final List listScreens = [
     HomeView(),
     AddHomeProduct(),
     ProfileView(),
   ];
 
   @override
+  void initState() {
+    print('object');
+    groceryController.getAdminData();
+    groceryController.getMemberData();
+    super.initState();
+  }
+
+  @override
   void dispose() {
-    // TODO: implement dispose
     pageController.dispose();
     super.dispose();
   }
@@ -68,7 +76,7 @@ class _RouteViewState extends State<RouteView> {
                 Icons.home_filled,
                 color: Colors.lightGreen,
               ),
-              itemLabel: 'Home',
+              // itemLabel: 'Home',
             ),
             BottomBarItem(
               inActiveItem: Icon(
@@ -79,7 +87,7 @@ class _RouteViewState extends State<RouteView> {
                 Icons.add,
                 color: Colors.lightGreen,
               ),
-              itemLabel: 'Add',
+              // itemLabel: 'Add',
             ),
             BottomBarItem(
               inActiveItem: Icon(
@@ -90,7 +98,7 @@ class _RouteViewState extends State<RouteView> {
                 Icons.person,
                 color: Colors.lightGreen,
               ),
-              itemLabel: 'Profile',
+              // itemLabel: 'Profile',
             ),
           ],
         ),
